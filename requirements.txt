@@ -1,0 +1,16 @@
+# Data processing and analysis
+pandas
+numpy
+
+# Machine learning
+scikit-learn
+joblib
+
+# Web API
+fastapi
+uvicorn
+pydantic
+
+# Deployment
+docker
+docker-compose
