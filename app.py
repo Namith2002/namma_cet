@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, validator
 from typing import List, Dict, Any, Optional
 import pandas as pd
 import numpy as np
@@ -129,16 +129,14 @@ class ScoreInput(BaseModel):
     category_code: str = Field("GM", description="Category code (GM, SCG, STG, 3AG)")
     category_type: str = Field("General", description="Category type (General, HK)")
     
-    @field_validator('category_code')
-    @classmethod
+    @validator('category_code')
     def validate_category(cls, v):
         valid_categories = ['GM', 'SCG', 'STG', '3AG']
         if v not in valid_categories:
             raise ValueError(f"Category must be one of {valid_categories}")
         return v
     
-    @field_validator('category_type')
-    @classmethod
+    @validator('category_type')
     def validate_region(cls, v):
         valid_regions = ['General', 'HK']
         if v not in valid_regions:
@@ -245,16 +243,14 @@ class AllocationInput(BaseModel):
     category_type: str = Field("General", description="Category type (General, HK)")
     course_preference: Optional[str] = Field(None, description="Preferred course code")
     
-    @field_validator('category_code')
-    @classmethod
+    @validator('category_code')
     def validate_category(cls, v):
         valid_categories = ['GM', 'SCG', 'STG', '3AG']
         if v not in valid_categories:
             raise ValueError(f"Category must be one of {valid_categories}")
         return v
     
-    @field_validator('category_type')
-    @classmethod
+    @validator('category_type')
     def validate_region(cls, v):
         valid_regions = ['General', 'HK']
         if v not in valid_regions:
