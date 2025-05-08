@@ -126,12 +126,14 @@ class ScoreInput(BaseModel):
     chemistry_theory: int = Field(..., ge=0, le=100, description="Chemistry theory score (0-100)")
     mathematics_theory: int = Field(..., ge=0, le=100, description="Mathematics theory score (0-100)")
     biology_theory: int = Field(..., ge=0, le=100, description="Biology theory score (0-100)")
-    category_code: str = Field("GM", description="Category code (GM, SCG, STG, 3AG)")
+    category_code: str = Field("GM", description="Category code (GM, SCG, STG, 3AG, etc.)")
     category_type: str = Field("General", description="Category type (General, HK)")
     
     @validator('category_code')
     def validate_category(cls, v):
-        valid_categories = ['GM', 'SCG', 'STG', '3AG']
+        valid_categories = ['GM', 'GMK', 'GMR', 'SCG', 'SCK', 'SCR', 'STG', 'STK', 'STR', 
+                           '1G', '1K', '1R', '2AG', '2AK', '2AR', '2BG', '2BK', '2BR', 
+                           '3AG', '3AK', '3AR', '3BG', '3BK', '3BR']
         if v not in valid_categories:
             raise ValueError(f"Category must be one of {valid_categories}")
         return v
@@ -239,13 +241,15 @@ def get_eligible_colleges(predicted_rank, category_code, category_type, limit=10
 # Add a new input model for college allocation
 class AllocationInput(BaseModel):
     rank: int = Field(..., ge=1, le=250000, description="KCET Rank")
-    category_code: str = Field("GM", description="Category code (GM, SCG, STG, 3AG)")
+    category_code: str = Field("GM", description="Category code (GM, SCG, STG, 3AG, etc.)")
     category_type: str = Field("General", description="Category type (General, HK)")
     course_preference: Optional[str] = Field(None, description="Preferred course code")
     
     @validator('category_code')
     def validate_category(cls, v):
-        valid_categories = ['GM', 'SCG', 'STG', '3AG']
+        valid_categories = ['GM', 'GMK', 'GMR', 'SCG', 'SCK', 'SCR', 'STG', 'STK', 'STR', 
+                           '1G', '1K', '1R', '2AG', '2AK', '2AR', '2BG', '2BK', '2BR', 
+                           '3AG', '3AK', '3AR', '3BG', '3BK', '3BR']
         if v not in valid_categories:
             raise ValueError(f"Category must be one of {valid_categories}")
         return v
@@ -427,9 +431,29 @@ async def get_categories():
     return {
         "categories": [
             {"code": "GM", "name": "General Merit"},
+            {"code": "GMK", "name": "General Merit - Kannada"},
+            {"code": "GMR", "name": "General Merit - Rural"},
             {"code": "SCG", "name": "Scheduled Caste"},
+            {"code": "SCK", "name": "Scheduled Caste - Kannada"},
+            {"code": "SCR", "name": "Scheduled Caste - Rural"},
             {"code": "STG", "name": "Scheduled Tribe"},
-            {"code": "3AG", "name": "Other Backward Classes"}
+            {"code": "STK", "name": "Scheduled Tribe - Kannada"},
+            {"code": "STR", "name": "Scheduled Tribe - Rural"},
+            {"code": "1G", "name": "Category 1"},
+            {"code": "1K", "name": "Category 1 - Kannada"},
+            {"code": "1R", "name": "Category 1 - Rural"},
+            {"code": "2AG", "name": "Category 2A"},
+            {"code": "2AK", "name": "Category 2A - Kannada"},
+            {"code": "2AR", "name": "Category 2A - Rural"},
+            {"code": "2BG", "name": "Category 2B"},
+            {"code": "2BK", "name": "Category 2B - Kannada"},
+            {"code": "2BR", "name": "Category 2B - Rural"},
+            {"code": "3AG", "name": "Category 3A"},
+            {"code": "3AK", "name": "Category 3A - Kannada"},
+            {"code": "3AR", "name": "Category 3A - Rural"},
+            {"code": "3BG", "name": "Category 3B"},
+            {"code": "3BK", "name": "Category 3B - Kannada"},
+            {"code": "3BR", "name": "Category 3B - Rural"}
         ],
         "regions": [
             {"code": "General", "name": "General"},
