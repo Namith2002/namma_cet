@@ -1,12 +1,13 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Dict, Any, Optional
 import pandas as pd
 import numpy as np
 import joblib
 import os
 import uvicorn
+from contextlib import asynccontextmanager
 
 app = FastAPI(
     title="KCET Rank Prediction API",
@@ -30,8 +31,9 @@ college_data = None
 course_data = None
 cutoff_data = None
 
-@app.on_event("startup")
-async def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load model and data at startup
     global model, scaler, college_data, course_data, cutoff_data
     
     # Load model and scaler
@@ -59,49 +61,60 @@ async def startup_event():
     except Exception as e:
         print(f"Error loading model: {e}")
     
-    # Load college and course data
-    try:
-        college_data = pd.read_csv('processed_data/college_summary.csv')
-        course_data = pd.read_csv('processed_data/course_summary.csv')
-        print("Successfully loaded college and course data")
-    except Exception as e:
-        print(f"Error loading college/course data: {e}")
+    yield
     
-    # Load cutoff data
-    try:
-        cutoff_paths = [
-            'processed_data/college_cutoffs.csv',
-            'processed_data/ranking_data_all.csv',
-            'processed_data/college_summary.csv'
-        ]
-        
-        for path in cutoff_paths:
-            if os.path.exists(path):
-                cutoff_data = pd.read_csv(path)
-                print(f"Successfully loaded cutoff data from {path}")
-                
-                # If using college_summary.csv, adapt the column names
-                if path == 'processed_data/college_summary.csv':
-                    # Map min_rank to cutoff_rank if needed
-                    if 'min_rank' in cutoff_data.columns and 'cutoff_rank' not in cutoff_data.columns:
-                        cutoff_data['cutoff_rank'] = cutoff_data['min_rank']
-                
-                # Add category columns if they don't exist
-                if 'category_code' not in cutoff_data.columns:
-                    cutoff_data['category_code'] = 'GM'
-                if 'category_type' not in cutoff_data.columns:
-                    cutoff_data['category_type'] = 'General'
-                
-                break
-        
-        if cutoff_data is None and college_data is not None:
-            print("No cutoff data found. Using college data as fallback.")
-            cutoff_data = college_data.copy()
-            cutoff_data['cutoff_rank'] = cutoff_data['min_rank']
-            cutoff_data['category_code'] = 'GM'
-            cutoff_data['category_type'] = 'General'
-    except Exception as e:
-        print(f"Error loading cutoff data: {e}")
+    # Cleanup code here if needed
+
+app = FastAPI(
+    title="KCET Rank Prediction API",
+    description="API for predicting KCET ranks and allocating colleges based on exam scores",
+    version="1.0.0",
+    lifespan=lifespan
+)
+
+# Load college and course data
+try:
+    college_data = pd.read_csv('processed_data/college_summary.csv')
+    course_data = pd.read_csv('processed_data/course_summary.csv')
+    print("Successfully loaded college and course data")
+except Exception as e:
+    print(f"Error loading college/course data: {e}")
+
+# Load cutoff data
+try:
+    cutoff_paths = [
+        'processed_data/college_cutoffs.csv',
+        'processed_data/ranking_data_all.csv',
+        'processed_data/college_summary.csv'
+    ]
+    
+    for path in cutoff_paths:
+        if os.path.exists(path):
+            cutoff_data = pd.read_csv(path)
+            print(f"Successfully loaded cutoff data from {path}")
+            
+            # If using college_summary.csv, adapt the column names
+            if path == 'processed_data/college_summary.csv':
+                # Map min_rank to cutoff_rank if needed
+                if 'min_rank' in cutoff_data.columns and 'cutoff_rank' not in cutoff_data.columns:
+                    cutoff_data['cutoff_rank'] = cutoff_data['min_rank']
+            
+            # Add category columns if they don't exist
+            if 'category_code' not in cutoff_data.columns:
+                cutoff_data['category_code'] = 'GM'
+            if 'category_type' not in cutoff_data.columns:
+                cutoff_data['category_type'] = 'General'
+            
+            break
+    
+    if cutoff_data is None and college_data is not None:
+        print("No cutoff data found. Using college data as fallback.")
+        cutoff_data = college_data.copy()
+        cutoff_data['cutoff_rank'] = cutoff_data['min_rank']
+        cutoff_data['category_code'] = 'GM'
+        cutoff_data['category_type'] = 'General'
+except Exception as e:
+    print(f"Error loading cutoff data: {e}")
 
 # Input models
 class ScoreInput(BaseModel):
@@ -116,14 +129,16 @@ class ScoreInput(BaseModel):
     category_code: str = Field("GM", description="Category code (GM, SCG, STG, 3AG)")
     category_type: str = Field("General", description="Category type (General, HK)")
     
-    @validator('category_code')
+    @field_validator('category_code')
+    @classmethod
     def validate_category(cls, v):
         valid_categories = ['GM', 'SCG', 'STG', '3AG']
         if v not in valid_categories:
             raise ValueError(f"Category must be one of {valid_categories}")
         return v
     
-    @validator('category_type')
+    @field_validator('category_type')
+    @classmethod
     def validate_region(cls, v):
         valid_regions = ['General', 'HK']
         if v not in valid_regions:
@@ -230,14 +245,16 @@ class AllocationInput(BaseModel):
     category_type: str = Field("General", description="Category type (General, HK)")
     course_preference: Optional[str] = Field(None, description="Preferred course code")
     
-    @validator('category_code')
+    @field_validator('category_code')
+    @classmethod
     def validate_category(cls, v):
         valid_categories = ['GM', 'SCG', 'STG', '3AG']
         if v not in valid_categories:
             raise ValueError(f"Category must be one of {valid_categories}")
         return v
     
-    @validator('category_type')
+    @field_validator('category_type')
+    @classmethod
     def validate_region(cls, v):
         valid_regions = ['General', 'HK']
         if v not in valid_regions:
