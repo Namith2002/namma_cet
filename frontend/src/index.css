@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 dark:bg-[#030712] text-slate-900 dark:text-slate-100 font-sans antialiased selection:bg-primary-500 selection:text-white;
+    background-image: radial-gradient(ellipse at 50% -20%, rgba(124, 0, 255, 0.1), rgba(255, 255, 255, 0)), 
+                      radial-gradient(ellipse at 0% 50%, rgba(59, 130, 246, 0.05), rgba(255, 255, 255, 0));
+  }
+
+  .dark body {
+    background-image: radial-gradient(ellipse at 50% -20%, rgba(124, 0, 255, 0.15), rgba(0, 0, 0, 0)), 
+                      radial-gradient(ellipse at 0% 50%, rgba(59, 130, 246, 0.08), rgba(0, 0, 0, 0));
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading tracking-tight;
+  }
+}
+
+* {
+  @apply transition-colors duration-200;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Glassmorphism Effect */
+.glass {
+  @apply bg-white/60 dark:bg-[#0c101d]/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-2xl;
+}
+
+.glass-card {
+  @apply glass shadow-card hover:shadow-glass p-6 hover:-translate-y-0.5 transition-all duration-300;
+}
+
+/* Gradients */
+.gradient-text {
+  @apply bg-gradient-to-r from-primary-500 via-accent-violet to-accent-blue bg-clip-text text-transparent font-extrabold;
+}
+
+.bg-gradient-primary {
+  @apply bg-gradient-to-r from-primary-500 to-accent-blue;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-100 dark:bg-slate-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-slate-800 rounded-full hover:bg-primary-500 dark:hover:bg-primary-500;
+}
+
+/* Loading Spinner */
+.spinner {
+  @apply border-2 border-primary-200 border-t-primary-500 rounded-full animate-spin;
+}
+
+/* Focus Styles */
+input:focus,
+textarea:focus,
+select:focus {
+  @apply outline-none ring-2 ring-primary-500 ring-offset-0 border-transparent;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  @apply ring-primary-400;
+}
+
+/* Custom styles for glowing border */
+.glowing-border {
+  position: relative;
+}
+
+.glowing-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(to right, rgba(124,0,255,0.4), rgba(59,130,246,0.4));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
