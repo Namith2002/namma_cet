@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -72,6 +72,8 @@ app.add_middleware(
         "http://127.0.0.1:3000",
         "http://localhost:8000",
         "http://127.0.0.1:8000",
+        "https://nammacet-ed416.web.app",
+        "https://nammacet-ed416.firebaseapp.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -395,6 +397,10 @@ async def get_available_courses():
 @app.get("/")
 async def root():
     return {"message": "Welcome to KCET Rank Prediction API"}
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return Response(status_code=204)
 
 @app.post("/predict", response_model=PredictionResult)
 async def predict_rank_api(score_input: ScoreInput, limit: int = Query(10, ge=1, le=50)):
