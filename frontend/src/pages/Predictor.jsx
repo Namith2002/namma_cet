@@ -8,6 +8,7 @@ import { usePrediction } from '../context/PredictionContext'
 import { formatRank, formatScore, calculatePercentage } from '../utils/helpers'
 import { SimpleBarChart, SimpleLineChart } from '../components/charts'
 import { CollegeCard } from '../components/cards'
+import { FiAward } from 'react-icons/fi'
 
 const Predictor = () => {
   const { savePrediction } = usePrediction()
